@@ -1,0 +1,116 @@
+Gradle的Project和build.gradle存在着一对一的关系。
+
+一个Project从本质上说只是含有多个Task的容器。
+
+Any property or method which your script uses is delegated through to the associated Project object.
+
+The tasks of the project. A method is added for each task, using the name of the task as the method name and taking a single closure parameter. The method calls the Task.configure(groovy.lang.Closure) method for the associated task with the provided closure. For example, if the project has a task called compile, then a method is added with the following signature: void compile(Closure configureClosure).代理
+
+====================================
+Gradle从入门到提高系列（二）——创建Task的多种方法	
+
+Gradle的Project从本质上说只是含有多个Task的容器，一个Task与Ant的Target相似，表示一个逻辑执行单元。我们可以通过
+很多种方式定义Task，所有的Task都存放在Project的TaskContainer中。
+
+（1）调用Project的task()方法创建Task
+
+在使用Gradle时，创建Task最常见的方式便是：
+
+
+task hello1 << {
+println 'hello1'
+}
+
+这里的“<<”表示追加的意思，即向hello中加入执行过程。我们还可以使用doLast来达到同样的效果：
+
+task hello2 {
+doLast {
+println 'hello2'}
+}
+
+另外，如果需要向Task的最前面加入执行过程，我们可以使用doFirst：
+
+task hello3 {
+doLast {
+println 'hello3'}
+}
+
+在上面的3个例子中，Gradle的DSL向我们展示了一种非常自然的风格来创建Task，而事实上这些都只是一种内部DSL，也即必须符合groovy的语法要求。
+上面的task关键字实际上是一个方法调用，该方法属于Project。Project中存在多个重载的task()方法完成多种类型的Task创建。
+
+以上我们自定义的3个Task都位于TaskContainer中，Project中的tasks即表示该TaskContainer。为此，我们可以新建一个Task来显示这些信息：
+
+task showTasks {
+println tasks.class
+println tasks.size()
+}
+
+将以上4个Task放在同一个build.gradle中，再执行gradle showTasks，命令行输出如下：
+
+...
+class org.gradle.api.internal.tasks.DefaultTaskContainer_Decorated
+4
+...
+
+上面的DefaultTaskContainer_Decorated表示tasks类型，而4表示该TaskContainer中包含有4个自定义的Task——包括showTasks。
+
+（2）通过TaskContainer的create()方法创建Task
+在上文中我们讲到，通过task()方法创建的Task都被存放在了TaskContainer中，而Project又维护了一个TaskContainer类型的属性tasks，那么我们完全可以直接向TaskContainer里面添加Task。查查TaskContainer的API文档可以发现，TaskContainer向我们提供了大量的create()方法用于添加Task。
+
+tasks.create(name: 'hello4') << {
+    println 'hello4'
+}
+
+（3）声明Task之间的依赖关系
+Task之间是可以存在依赖关系，比如TaskA依赖TaskB，那么在执行TaskA时，Gradle会先执行TaskB，再执行TaskA。我们可以在定义一个Task的同时声明它的依赖关系：
+
+task hello5(dependsOn:hello4) << {
+println 'hello5'
+}
+
+当然，我们也可以在定义Task之后再声明依赖：
+
+task hello6 << {
+println 'hello6'
+}
+
+hello6.dependsOn hello5
+
+
+（4）配置Task
+一个Task出了执行操作之外，还包含有多个Property，其中有Gradle为每个Task默认定义的Property，比如description，logger等，每一个特定的Task类型还可以含有特定的Property，比如Copy的from和to等，当然，我们还可以动态地向Task中加入额外的Property。在执行一个Task之前，我们通常都需要先设定Property的值，Gradle提供了多种方法设置Task的Property值。
+	
+首先，我们可以在定义Task的时候对Property进行配置：
+
+task hello7 << {
+description = "this is hello7"
+println description
+}
+
+我们还可以通过闭包的方式来配置一个已有的Task：
+
+task hello8 << {
+println description
+}
+
+hello8 {
+description = "this is hello8"
+}
+
+需要注意的是，对hello8的description的设置发生在定义该Task之后，在执行gradle hello8时，命令行依然可以打印出正确的“this is hello8”，这是因为Gradle在执行Task时分为两个阶段，首先是配置阶段，然后才是实际执行阶段。所以在执行hello8之前，Gradle会扫描整个build.gradle文档，将hello8的description设置为“this is hello8”，再执行hello8，此时hello8的description已经包含了设置后的值。
+
+另外，我们还可以通过调用Task的configure()方法完成Property的设置：
+
+task hello9 << {
+println description
+}
+
+hello9.configure {
+description = "this is hello9"
+}
+
+实际上，通过闭包的方式在内部也是通过调用Task的configure()方法完成的，我们将在后续的博文中详细地讲到。
+
+
+
+	
