@@ -1,0 +1,87 @@
+Gradle从入门到提高系列（三）—— 读懂Gradle
+
+Gradle是一种声明式的构建工具。在执行时，Gradle并不会一开始便顺序执行build.gradle文件中的内容，而是分为两个阶段，第一个阶段是配置阶段，然后才是实际的执行阶段。在
+配置阶段，Gradle将读取所有build.gradle文件的所有内容来配置Project和Task等，比如设置Project和Task的Property，处理Task之间的依赖关系等。
+
+虽然很多时候我们只需要照着网上的例子写自己的DSL语句就行了，但是此时我们所知道的也就只有这么多。另一方面，如果我们能够了解Gradle DSL的内部工作机制，那么我们便可以达到
+举一反三的效果。
+
+在前面的文章中我们讲到，Gradle的DSL只是Groovy语言的内部DSL，也即必须遵循Groovy的语法规则。现在，让我们先来看看以下非常简单的Task：
+
+task showDescription1 << {
+    description = 'this is task showDescription'
+    println description
+}
+
+task showDescription2 << {
+    println description
+}
+showDescription2.description = 'this is task showDescription'
+
+
+task showDescription3 << {
+    println description
+}
+showDescription3 {
+    description = 'this is task showDescription'
+}
+
+以上3个Task完成的功能均相同，即先设置Task的description属性，在将其输出到命令行。但是，他们对description的设置方式是不同的。对于showDescription1，我们在定义一个Task的时候
+便对该Task的description属性设置；对于showDescription2，其本身便是Project的一个Property；而对于showDescription3，我们是在一个和它同名的方法中设置description。
+
+事实上，对于每一个Task，Gradle都会在Project中创建一个同名的Property，所以我们可以将该Task当作Property来访问，showDescription2便是这种情况。
+另外，Gradle还会创建一个同名的方法，该方法接受一个闭包，我们可以使用该方法来配置Task，showDescription3便是这种情况。
+
+要读懂Gradle，我们首先需要了解Groovy语言中的两个概念，一个Groovy中的Bean概念，一个是Groovy闭包的delegate机制。
+
+Groovy中的Bean和Java中的Bean有一个很大的不同，即Groovy为每一个字段都会自动生成getter和setter，并且我们可以通过像访问字段本身一样调用getter和setter，比如：
+
+class GroovyBeanExample {
+    private String name
+}
+
+def bean = new GroovyBeanExample()
+bean.name = 'this is name'
+println bean.name
+
+我们看到，GroovyBeanExample只定义了一个私有的name属性，并且没有getter和setter。但是在使用时，我们可以直接对name进行访问，无论时读还是写。事实上，我们并不是
+在直接访问name属性，当我们执行"bean.name = 'this is name'"时，我们实际调用的是"bean.setName('this is name')"，而在调用"println bean.name"时，我们实际调用的是
+"println bean.getName()"。这里的原因在于，Groovy动态地位name创建了getter和setter，采用像直接访问的方式的目的是为了增加代码的可读性，是它更加自然，而在内部，Groovy依然
+是在调用setter和getter方法。这样，我们便可以理解上面对showDescription2的description设置原理。
+
+另外，Gradle大量地使用了Groovy闭包的delegate机制。简单来说，delegate机制可以使我们将一个闭包中的执行代码的作用对象设置成任意其他对象。比如：
+
+class Child {
+    private String name
+}
+
+class Parent {
+    Child child = new Child();
+
+    void configChild(Closure c) {
+        c.delegate = child
+        c.setResolveStrategy Closure.DELEGATE_FIRST
+        c()
+    }
+}
+
+def parent = new Parent()
+parent.configChild {
+    name = "child name"
+}
+
+println parent.child.name
+
+在上面的例子中，当我们调用configChild()方法时，我们并没有指出name属性是属于Child的，但是它的确时设置Child的name。事实上光从该方法的调用中，我们根本不知道name是属于
+哪个对象的，你可能会认为它是属于Parent的。真实情况是，在默认情况下，name的确被认为是属于Parent的，但是我们在configChild()方法的定义中做了手脚，使其不再访问Parent中的name（Parent也没有name属性），而是
+Child的name。在configChild()方法中，我们将该方法接受的闭包的delegate设置成了child，然后将该闭包的ResolveStrategy设置成了DELEGATE_FIRST。这样，在调用configChild()时，所跟闭包中
+代码被代理到了child上，即这些代码实际上是在child上执行的。此外，闭包的ResolveStrategy在默认情况下是OWNER_FIRST，即它会先查找闭包的owner（这里基Parent），如果owner存在，则在owner上执行闭包中的
+代码。这里我们将其设置成了DELEGATE_FIRST，即该闭包会首先查找delegate（本例中即child），如果找到，该闭包便会在delegate上执行。对于上面的showDescription3，便是这种情况，当然，实际情况会稍微复杂一点，比如
+showDescription3()方法会在内部调用showDescription3的configure()方法，再在configure()方法中设置执行闭包中的代码。
+
+你可能会发现，在使用Gradle时，我们并没有想上面的parent.configChild()一样指明方法调用的对象，而是在build.gradle文件中直接调用task()，apply()和configuration()方法等，这是
+因为在没有说明调用对象的情况下，Gradle会自动将调用对象设置成当前Project。比如调用apply()方法和调用project.apply()方法的效果是一样的。查查Gradle的Project文档，你会发现这些方法都是Project类的方法。
+
+又举个例子，对于configurations()方法（它的作用我们将在后面的文章中讲到），该方法实际上会将所跟闭包的delegate设置成ConfigurationContainer，然后在该ConfigurationContainer上执行闭包中的代码。
+再比如，dependencies()方法，该方法会将所跟闭包的delegate设置成DependencyHandler。还有，Project还定义了configure(Object object,Closure configureClosure)方法，该方法是专门用来配置对象的（比如Task），它会将configureClosure
+的delegate设置成object，之后configureClosure中的执行代码其实是在object上执行的。和Groovy Bean一样，delegate机制的一个好处是可以增加所创建DSL的可读性。

@@ -1,0 +1,36 @@
+task showDescription1 << {
+    description = 'this is task showDescription'
+    println description
+}
+
+task showDescription2 << {
+    println description
+}
+showDescription2.description = 'this is task showDescription'
+
+
+task showDescription3 << {
+    println description
+}
+showDescription3 {
+    description = 'this is task showDescription'
+}
+
+
+
+task copyFile1(type: Copy) << {
+    from 'source'
+    into 'destination'
+}
+
+
+task copyFile2(type: Copy)
+copyFile2.from 'source'
+copyFile2.into 'destination'
+
+
+task copyFile3(type: Copy)
+copyFile3 {
+    from 'source'
+    into 'destination'
+}
