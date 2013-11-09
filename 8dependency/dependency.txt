@@ -1,0 +1,97 @@
+Gradle从入门到提高（七）—— 依赖管理
+一个Java项目总会依赖于第三方，要么是一个第三方类库，比如Apache commons；要么是你自己开发的另外一个Java项目，比如你的web项目依赖于另一个核心的业务项目。
+通常来说，这种依赖的表示形式都是将第三方的Jar文件放在自己项目的classpath下，要么是编译时的classpath，要么是运行时的classpath。
+
+在声明对第三方类库的依赖时，我们需要告诉Gradle在什么地方去获取这些依赖，即配置Gradle的Repository。在配置好依赖之后，Gradle会自动地从下载这些依赖到本地。
+Gradle可以使用Maven和Ivy的Repository，同时它还可以使用本地文件系统作为Repository。
+
+在本文中，我们将以Maven的Repository为例进行讲解，要配置Maven的Repository是非常简单的，我们只需要在build.gradle文件中加入以下代码即可：
+
+    repositories {
+        mavenCentral()
+    }
+
+Gradle将对依赖进行分组，比如编译Java时使用的是这组依赖，运行Java时又可以使用另一组依赖。每一组依赖称为一个Configuration，在声明依赖时，我们实际上时在设置
+不同的Configuration。值得一提的是，将依赖称为Configuration并不是一个好的名字，更好的应该叫作诸如“DependencyGroup”之类的。但是，习惯了就好的。
+
+要定义一个Configuration，我们可以通过以下方式完成：
+
+configurations {
+    myDependency
+}
+
+以上只是定义了一个名为myDependency的Configuration，我们并未向其中加入依赖。我们可以通过dependencies()方法向myDependency中加入实际的依赖项：
+
+dependencies {
+    myDependency 'org.apache.commons:commons-lang3:3.0'
+}
+
+以上，我们将Apache的commons加入了myDependency中。之后，如果有Task需要将Apache commons加入到classpath中，我们可以通过以下方式进行获取：
+
+task showMyDependency << {
+    println configurations.myDependency.asPath
+}
+
+执行“gradle showMyDependency”命令，在笔者的电脑上终端将显示：
+
+:showMyDependency
+/Users/twer/.gradle/caches/artifacts-26/filestore/org.apache.commons/commons-lang3/3.0/jar/8873bd0bb5cb9ee37f1b04578eb7e26fcdd44cb0/commons-lang3-3.0.jar
+
+BUILD SUCCESSFUL
+
+Total time: 4.405 secs
+
+在实际应用时，比如我们需要调用Ant的某个target，而该target在执行时需要设置正确的classpath，那么我们便可以通过以上方式进行设置。
+
+下面，我们来看一个Java项目，该项目依赖于SLF4J，而在测试时依赖于Junit。在声明依赖时，我们可以通过以下方式进行设置：
+
+dependencies {
+    compile 'org.slf4j:slf4j-log4j12:1.7.2'
+    testCompile 'junit:junit:4.8.2'
+}
+
+。。。
+我们并没有定义名为compile和testCompile的Configuration，这是这么回事呢？原因在于，java Plugin会自动定义compile和testCompile，分别用于编译Java源文件和编译Java测试源文件。
+另外，java Plugin还定义了runtime和testRuntime这两个Configuration，分别用于在程序运行和测试运行时加入所配置的依赖。
+
+
+再举个来自Gradle官网的例子：在Gradle中调用Ant，首先我们通过Configuration声明一组依赖，然后在Ant定义中将该Configuration所表示的classpath传给Ant：
+
+configurations {
+    pmd
+}
+
+dependencies {
+    pmd group: 'pmd', name: 'pmd', version: '4.2.5'
+}
+
+task check << {
+    ant.taskdef(name: 'pmd', classname: 'net.sourceforge.pmd.ant.PMDTask', classpath: configurations.pmd.asPath)
+    ant.pmd(shortFilenames: 'true', failonruleviolation: 'true', rulesetfiles: file('pmd-rules.xml').toURI().toString()) {
+        formatter(type: 'text', toConsole: 'true')
+        fileset(dir: 'src')
+    }
+}
+
+如果存在依赖冲突，在默认情况下，Gradle会选择最新版本，这个Maven是不同的，Maven会选择离依赖树最近的版本。当然，我们可以通过设置Configuration的resolutionStrategy来
+重新设置依赖冲突的处理规则，对此本文将不予讲解。
+
+除了可以加入Maven和Ivy的Repository中的依赖之外，Gradle还允许我们声明对其他Project或者文件系统的依赖。比如，如果ProjectA的compileJava依赖于ProjectB，那么可以在ProjectA中声明如下：
+
+dependencies {
+    compile project(':ProjectB')
+}
+
+在下一篇文章中，我们将对此再做讲解。
+
+另外，对于本地文件系统中的Jar文件，我们可以通过以下方式声明对其的依赖：
+
+dependencies {
+       compile files('spring-core.jar', 'spring-aap.jar')
+       compile fileTree(dir: 'deps', include: '*.jar')
+}
+
+
+
+
+

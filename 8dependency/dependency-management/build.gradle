@@ -1,22 +1,37 @@
-    apply plugin: 'idea'
-    apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'java'
 
-    sourceCompatibility  = 1.6
-    group = 'davenkin'
-    version = '1.0-SNAPSHOT'
+sourceCompatibility = 1.6
+group = 'davenkin'
+version = '1.0-SNAPSHOT'
 
-    repositories {
-        mavenCentral()
-    }
 
-    dependencies {
-        testCompile 'junit:junit:4.8.2'
-        testCompile 'easymock:easymock:2.0'
-        compile 'org.slf4j:slf4j-log4j12:1.7.2'
-    }
+configurations {
+    myDependency
+}
+
+
+dependencies {
+    myDependency 'org.apache.commons:commons-lang3:3.0'
+}
+
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile 'junit:junit:4.8.2'
+    testCompile 'easymock:easymock:2.0'
+    compile 'org.slf4j:slf4j-log4j12:1.7.2'
+}
 
 task wrapper(type: Wrapper) {
     gradleVersion = '1.0-milestone-9'
     jarFile = 'wrapper/wrapper.jar'
+}
+
+task showMyDependency << {
+    println configurations.myDependency.asPath
 }
 
