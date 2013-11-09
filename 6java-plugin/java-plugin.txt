@@ -1,0 +1,14 @@
+Gradle最常用的Plugin便是java Plugin。和其他Plugin一样，java Plugin并没有什么特别的地方，只是向Project中引入了多个Task和Property。当然，java Plugin也有
+比较与众不同的地方，其中之一便是在项目中引入了构建生命周期的概念，就像Maven一样。但是，和Maven不同的是，Gradle的项目构建生命周期并不是Gradle的内建机制，而是由Plugin
+引入的。
+
+
+
+Java项目的目录结构
+
+Gradle最常用的PuginGradle在默认情况下采用了与Maven相同的工程目录结构，
+
+java Plugin引入的主要Task
+java Plugin引入的Property
+配置已有sourceSet
+创建新的sourceSet

@@ -1,0 +1,20 @@
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+target
+*.iml
+*.ipr
+*.iws
+build
+out
+target
+.gradle
+wrapper
+gradlew
+gradlew.bat
+
+
