@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
  * Time: 8:28 PM
  * To change this template use File | Settings | File Templates.
  */
-public class HelloWorld {
+public class HelloWorld implements HelloWordApi {
           private final static Logger logger = LoggerFactory.getLogger(HelloWorld.class);
 
     public String sayHello(){

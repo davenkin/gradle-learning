@@ -1,16 +1,43 @@
-    apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'java'
 
-    sourceCompatibility  = 1.6
-    group = 'davenkin'
-    version = '1.0-SNAPSHOT'
+sourceCompatibility = 1.6
+group = 'davenkin'
+version = '1.0-SNAPSHOT'
 
-    repositories {
-        mavenCentral()
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile 'junit:junit:4.8.2'
+    testCompile 'easymock:easymock:2.0'
+    compile 'org.slf4j:slf4j-log4j12:1.7.2'
+}
+
+
+sourceSets {
+    api
+    main {
+        java {
+            srcDir 'java-sources'
+        }
+        resources {
+            srcDir 'resources'
+        }
     }
+}
 
-    dependencies {
-        testCompile 'junit:junit:4.8.2'
-        testCompile 'easymock:easymock:2.0'
-        compile 'org.slf4j:slf4j-log4j12:1.7.2'
+sourceSets {
+    main {
+        compileClasspath = compileClasspath + files(api.output.
+                classesDir)
     }
+    test {
+        runtimeClasspath = runtimeClasspath + files(api.output.
+                classesDir)
+    }
+}
+
+classes.dependsOn apiClasses
 
