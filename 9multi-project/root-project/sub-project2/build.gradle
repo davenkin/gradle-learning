@@ -1,0 +1,9 @@
+//project 2
+
+task taskC << {
+    println 'this is taskC from project 1'
+}
+
+task taskD << {
+    println 'this is taskD from project 2'
+}
