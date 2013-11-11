@@ -1,0 +1,8 @@
+task helloWorld << {
+    println "Hello World!"
+}
+
+task copyFile(type: Copy) {
+    from 'xml'
+    into 'destination'
+}

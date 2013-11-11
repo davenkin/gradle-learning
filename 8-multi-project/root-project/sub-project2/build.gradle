@@ -1,7 +1,7 @@
 //project 2
 
 task taskC << {
-    println 'this is taskC from project 1'
+    println 'this is taskC from project 2'
 }
 
 task taskD << {

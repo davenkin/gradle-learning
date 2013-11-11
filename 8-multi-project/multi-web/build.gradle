@@ -1,0 +1,11 @@
+allprojects {
+    apply plugin: 'idea'
+    repositories {
+        mavenCentral()
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+    sourceCompatibility  = 1.6
+}

@@ -1,0 +1,66 @@
+在前面的文章中我们讲到，Gradle的Task除了执行一些操作之外，对Project的Property进行读写也是非常重要的一方面。Gradle为每个Project定义了一些默认的Property，另外我们还可以向Project中自定义额外的Property以供我们自己的Task所需。比如，在自己编写Plugin是，我们通常需要对Plugin进行配置，常见的做法便是为这些配置信息定义Property。
+
+（1）Project内建的Property
+在本系列的第一篇文章中，我们通过"gradle properties"命令查看了一个Project在默认情况下所拥有的Property，这里我们再查看一遍其中比较重要的几个，对于一个空的build.gradle文件，它所对应的Project的Property如下：
+
+allprojects: [root project 'custom-property']
+ant: org.gradle.api.internal.project.DefaultAntBuilder@14a08e6
+antBuilderFactory: org.gradle.api.internal.project.DefaultAntBuilderFactory@564448
+artifacts: org.gradle.api.internal.artifacts.dsl.DefaultArtifactHandler@a4441e
+asDynamicObject: org.gradle.api.internal.ExtensibleDynamicObject@15b2fd8
+buildDir: /home/davenkin/Desktop/gradle-blog/custom-property/build
+buildFile: /home/davenkin/Desktop/gradle-blog/custom-property/build.gradle
+buildScriptSource: org.gradle.groovy.scripts.UriScriptSource@3f7944
+buildscript: org.gradle.api.internal.initialization.DefaultScriptHandler@1a3a66c
+childProjects: {}
+class: class org.gradle.api.internal.project.DefaultProject_Decorated
+components: []
+configurationActions: org.gradle.configuration.project.DefaultProjectConfigurationActionContainer@582138
+configurations: []
+convention: org.gradle.api.internal.plugins.DefaultConvention@18dd769
+defaultTasks: []
+dependencies: org.gradle.api.internal.artifacts.dsl.dependencies.DefaultDependencyHandler@16a1a66
+dependsOnProjects: []
+depth: 0
+description: null
+ext: org.gradle.api.internal.plugins.DefaultExtraPropertiesExtension@1e7a657
+extensions: org.gradle.api.internal.plugins.DefaultConvention@18dd769
+fileResolver: org.gradle.api.internal.file.BaseDirFileResolver@1e02860
+gradle: build 'custom-property'
+group: 
+implicitTasks: [task ':dependencies', task ':dependencyInsight', task ':help', task ':projects', task ':properties', task ':tasks']
+inheritedScope: org.gradle.api.internal.ExtensibleDynamicObject$InheritedDynamicObject@7ecd43
+logger: org.gradle.api.logging.Logging$LoggerImpl@17018cf
+logging: org.gradle.logging.internal.DefaultLoggingManager@14a70bf
+metaClass: org.codehaus.groovy.runtime.HandleMetaClass@1937246[groovy.lang.MetaClassImpl@1937246[class org.gradle.api.internal.project.DefaultProject_Decorated]]
+module: org.gradle.api.internal.artifacts.ProjectBackedModule@1e185b9
+name: custom-property
+parent: null
+parentIdentifier: null
+path: :
+plugins: [org.gradle.api.plugins.HelpTasksPlugin@c93509]
+project: root project 'custom-property'
+projectDir: /home/davenkin/Desktop/gradle-blog/custom-property
+projectEvaluationBroadcaster: ProjectEvaluationListener broadcast
+projectEvaluator: org.gradle.configuration.project.LifecycleProjectEvaluator@1ce6a36
+projectRegistry: org.gradle.api.internal.project.DefaultProjectRegistry@10a485c
+properties: {...}
+repositories: []
+resources: org.gradle.api.internal.resources.DefaultResourceHandler@1c8c0e6
+rootDir: /home/davenkin/Desktop/gradle-blog/custom-property
+rootProject: root project 'custom-property'
+scriptPluginFactory: org.gradle.configuration.DefaultScriptPluginFactory@9ca84f
+services: ProjectInternalServiceRegistry
+standardOutputCapture: org.gradle.logging.internal.DefaultLoggingManager@14a70bf
+state: project state 'EXECUTED'
+status: release
+subprojects: []
+tasks: []
+version: unspecified
+
+BUILD SUCCESSFUL
+
+Total time: 2.266 secs
+
+
+（2）自定义Property

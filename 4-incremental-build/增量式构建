@@ -1,0 +1,59 @@
+如果我们将Gradle的Task看作一个黑盒子，那么我们便可以抽象出输入和输出的概念，一个Task对输入进行操作，然后产生输出。比如，在使用java插件编译源代码时，输入即为Java源文件，输出则为class文件。如果多次执行一个Task时的输入和输出是一样的，那么我们便可以认为这样的Task是没有必要重复执行的。此时，反复执行相同的Task是冗余的，并且是耗时的。
+
+为了解决这样的问题，Gradle引入了增量式构建的概念。在增量式构建中，我们为每个Task定义输入（inputs）和输入（outputs），如果在执行一个Task时，它的输入和输出与前一次执行时没有发生变化，那么Gradle便会认为该Task是最新的（UP-TO-DATE），因此Gradle将不予执行。一个Task的inputs和outputs可以是一个或多个文件，可以是文件夹，还可以是Project的某个Property，甚至可以是闭包所定义的条件。
+
+每个Task都拥有inputs和outputs属性，他们的类型分别为TaskInputs和TaskOutputs。
+
+在下面的例子中，我们展示了这么一种场景：名为combineFileContent的Task从sourceDir目录中读取所有的文件，然后将每个文件的内容合并到destination.txt文件中。让我们先来看看没有定义Task输入和输出的情况：
+
+task combineFileContentNonIncremental  {
+def sources = fileTree('sourceDir')
+
+def destination = file('destination.txt')
+
+doLast {
+destination.withPrintWriter { writer ->
+sources.each {source ->
+writer.println source.text
+}
+}
+}
+}
+
+多次执行“gradle combineFileContentNonIncremental”时，整个Task都会反复执行，即便在第一次执行后我们已经得到了所需的结果。如果该combineFileContentNonIncremental是一个繁重的Task，那么多次重复执行势必造成没必要的时间耗费。
+
+这时，我们可以将sources声明为该Task的inputs，而将destination声明为outputs，重新创建一个Task如下：
+
+task combineFileContentIncremental  {
+def sources = fileTree('sourceDir')
+def destination = file('destination.txt')
+
+inputs.dir sources
+outputs.file destination
+
+doLast {
+destination.withPrintWriter { writer ->
+sources.each {source ->
+writer.println source.text
+}
+}
+}
+}
+
+相比之下，后一个Task只比前一个Task多了两行代码：
+
+inputs.dir sources
+outputs.file destination
+
+当首次执行combineFileContentIncremental时，Gradle会完整地执行该Task。但是紧接着再执行一次，命令行显示：
+
+:combineFileContentIncremental UP-TO-DATE
+
+BUILD SUCCESSFUL
+
+Total time: 2.104 secs
+
+我们发现，combineFileContentIncremental被标记为UP-TO-DATE，表示该Task是最新的，Gradle将不予执行。在实际应用中，你将遇到很多这样的情况，因为Gradle的很多插件都引入了增量式构建机制。
+
+如果我们修改了inputs（即sourceDir文件夹）中的任何一个文件或删除掉了destination.txt，当调用“gradle combineFileContentIncremental”时，Gradle又会重新执行，因为此时的Task已经不再是最新的了。对于outputs，我们还可以使用upToDateWhen()方法来决定一个Task的outputs是否为最新的，该方法接受一个闭包作为检查条件，感兴趣的读者可以自行练习。
+

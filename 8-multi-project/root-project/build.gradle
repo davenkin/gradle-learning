@@ -18,8 +18,9 @@ project(':sub-project1') {
     }
 }
 
+
 configure(allprojects.findAll { it.name.startsWith('sub') }) {
     subTask << {
-        println 'sub project'
+        println 'this is a sub project'
     }
 }

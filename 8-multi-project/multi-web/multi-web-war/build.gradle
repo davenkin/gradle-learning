@@ -1,0 +1,8 @@
+apply plugin: 'war'
+apply plugin: 'jetty'
+
+dependencies {
+    compile 'org.springframework:spring-webmvc:3.2.2.RELEASE'
+    runtime 'javax.servlet:servlet-api:2.5'
+    compile project(':multi-web')
+}
