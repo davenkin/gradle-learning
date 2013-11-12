@@ -1,0 +1,16 @@
+buildscript {
+    repositories {
+        maven {
+            url 'file:../lib'
+        }
+
+    }
+
+
+    dependencies {
+        classpath group: 'davenkin', name: 'hellotask', version: '1.0'
+    }
+}
+
+
+task hello(type: davenkin.HelloWorldTask)

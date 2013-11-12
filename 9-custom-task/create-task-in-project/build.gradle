@@ -1,0 +1,6 @@
+task hello(type:davenkin.HelloWorldTask)
+
+
+task hello1(type:davenkin.HelloWorldTask){
+    message ="I am a programmer"
+}

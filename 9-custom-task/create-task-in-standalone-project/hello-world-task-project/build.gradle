@@ -1,0 +1,17 @@
+apply plugin: 'groovy'
+apply plugin: 'maven'
+version = '1.0'
+group = 'davenkin'
+archivesBaseName = 'hellotask'
+apply plugin: 'idea'
+repositories.mavenCentral()
+
+dependencies {
+    compile gradleApi()
+    groovy localGroovy()
+}
+uploadArchives {
+    repositories.mavenDeployer {
+        repository(url: 'file:../lib')
+    }
+}
