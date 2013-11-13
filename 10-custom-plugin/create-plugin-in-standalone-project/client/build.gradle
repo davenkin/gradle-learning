@@ -1,0 +1,16 @@
+buildscript {
+    repositories {
+        maven {
+            url 'file:../lib'
+        } }
+    dependencies {
+        classpath group: 'davenkin', name: 'datetimeplugin',
+                version: '1.0'
+    }
+}
+apply plugin: 'time'
+
+dateAndTime {
+    timeFormat = 'HH:mm:ss.SSS'
+    dateFormat = 'MM/dd/yyyy'
+}

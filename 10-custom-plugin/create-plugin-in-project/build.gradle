@@ -1,0 +1,6 @@
+apply plugin: davenkin.DateAndTimePlugin
+
+dateAndTime {
+    timeFormat = 'HH:mm:ss.SSS'
+    dateFormat = 'MM/dd/yyyy'
+}
