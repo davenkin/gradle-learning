@@ -113,7 +113,7 @@ taskA.dependsOn taskB
 在执行“gradle taskA”时，终端输出：
 
 :sub-project1:taskB
-this is taskB from project 2
+this is taskB from project 1
 :sub-project1:taskA
 this is taskA from project 1
 
